@@ -1,0 +1,21 @@
+# Core dependencies
+langchain>=0.1.0
+langchain-ollama>=0.0.1
+pydantic>=2.5.2
+typing-extensions>=4.8.0
+
+# Database connectors
+psycopg2-binary>=2.9.9
+pymongo>=4.6.1
+sqlalchemy>=2.0.23
+
+# Data processing
+pandas>=2.1.3
+
+# Environment and configuration
+python-decouple>=3.8
+python-dotenv>=1.0.0
+
+# LLM integration
+ollama>=0.1.0  # For local LLM support
+
