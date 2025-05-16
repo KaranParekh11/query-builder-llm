@@ -38,10 +38,9 @@ class PostgresQueryBuilder:
             ),
         )
 
-    def generate_query(self, nl_query: str) -> str:
-        schema = self.introspector.get_schema_info(nl_query)
+    def generate_query(self, nl_query: str, **kwargs) -> str:
+        schema = self.introspector.get_schema_info(nl_query, **kwargs)
         formatted = self._format(schema)
-        print("Formatted schema:", formatted)
         raw = self.llm.invoke(
             self.query_prompt.format(schema=formatted, query=nl_query)
         )
@@ -50,7 +49,6 @@ class PostgresQueryBuilder:
     def execute_query(self, sql: str) -> pd.DataFrame:
         try:
             with self.introspector.engine.connect() as conn:
-                print("Executing SQL:", sql)
                 result = conn.exec_driver_sql(sql)
                 return result.fetchall()
 

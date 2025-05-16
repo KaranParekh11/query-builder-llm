@@ -39,19 +39,20 @@ class MongoDBQueryBuilder:
                 {query}
                 into a MongoDB aggregation pipeline.
                 Return **only** the array of stages object itself, formatted exactly like this example (no wrapping object, no extra keys, no markdown, no explanation):
+                Example:
                 {{ pipeline:[
                 {{ "$group": {{ "_id": null, "count": {{ "$sum": 1 }} }} }},
                 {{ "$match": {{ "status": {{ "$exists": true }} }} }},
                 {{ "$count": "totalDocuments" }}
                 ] }}
                 Do not include any other fields or commentary.
+                Create Respected pipelines for query.
                 """
             ),
         )
 
-    def generate_query(self, nl_query: str) -> str:
-        schema = self.introspector.get_schema_info(nl_query)
-        self.target = list(schema.keys())[0]
+    def generate_query(self, nl_query: str, **kwargs) -> str:
+        schema = self.introspector.get_schema_info(nl_query, **kwargs)
         formatted = self._format(schema)
         raw = self.llm.invoke(
             self.query_prompt.format(schema=formatted, query=nl_query)
@@ -60,11 +61,14 @@ class MongoDBQueryBuilder:
 
     def execute_query(self, pipeline_str: str) -> List[Dict[str, Any]]:
         pipeline = self._parse_pipeline(pipeline_str)
+        print(f"Parsed pipeline: {pipeline}")
         db = self.introspector.client[self.introspector.get_database_name()]
-        if not self.target:
-            self.target = list(self.introspector.get_schema_info().keys())[0]
-        print(f"Executing pipeline on collection: {self.target}")
-        return list(db[self.target].aggregate(pipeline))
+        if not self.introspector.target:
+            self.introspector.target = list(self.introspector.get_schema_info().keys())[
+                0
+            ]
+        print(f"Executing pipeline on collection: {self.introspector.target}")
+        return list(db[self.introspector.target].aggregate(pipeline))
 
     @staticmethod
     def safe_json(obj: Any):

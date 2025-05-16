@@ -24,6 +24,7 @@ class SchemaIntrospector:
         self.db_type = db_type.lower()
         self.connection_string = connection_string
         self.schema_cache = schema_cache
+        self.target = None
         # Optional LLM for best-target selection
         if llm_model:
             self.llm = OllamaLLM(
@@ -61,7 +62,7 @@ class SchemaIntrospector:
             return name or None
         return None
 
-    def get_schema_info(self, query: Optional[str] = None) -> Dict[str, Any]:
+    def get_schema_info(self, query: Optional[str] = None, **kwargs) -> Dict[str, Any]:
         """
         Returns full schema, or if `query` and LLM are provided,
         returns only the best-matching table/collection.
@@ -75,6 +76,15 @@ class SchemaIntrospector:
             if self.db_type == "postgres"
             else self._load_mongodb_schema()
         )
+        options = kwargs["options"] if "options" in kwargs else None
+
+        if options:
+            target_table = options.get("target_table", None)
+
+            if target_table and full[target_table]:
+                self.target = target_table
+                print("target_table", target_table)
+                return {target_table: full[target_table]}
 
         if query and self.llm:
             best = self._select_best(full, query)

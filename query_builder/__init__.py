@@ -16,6 +16,7 @@ class QueryBuilder:
         connection_string: str,
         llm_model: Optional[str] = None,
         schema_cache: Optional[Dict[str, Any]] = None,
+        **kwargs,
     ):
         self.db_type = db_type.lower()
         self.introspector = SchemaIntrospector(
@@ -28,8 +29,8 @@ class QueryBuilder:
         else:
             raise ValueError(f"Unsupported db_type: {db_type}")
 
-    def generate_query(self, nl: str) -> str:
-        return self.builder.generate_query(nl)
+    def generate_query(self, nl: str, **kwargs) -> str:
+        return self.builder.generate_query(nl, **kwargs)
 
     def execute_query(self, q: str) -> Union[pd.DataFrame, List[Dict[str, Any]]]:
         return self.builder.execute_query(q)
